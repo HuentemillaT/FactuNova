@@ -1,42 +1,121 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+:root {
+  --color-bg: #FFF8F0;            /* Fondo muy claro, cálido */
+  --color-primary: #E29578;       /* Naranja suave */
+  --color-secondary: #FFB4A2;     /* Coral suave */
+  --color-text: #6D6875;          /* Gris oscuro azulado */
+  --color-hover: #C76B59;         /* Naranja oscuro para hover */
+  --color-button-bg: #fff;        /* Blanco para botones */
+  --color-button-text: #E29578;   /* Texto naranja para botones */
+  --color-main-bg: #FFF2E8;       /* Fondo de contenido, muy claro */
+  --color-border: #E9D5C1;        /* Borde suave */
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* Navegación principal */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-primary);
+  padding: 1rem 2rem;
+  color: white;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar .logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: white;
+  user-select: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.nav-links a {
+  color: white;
+  font-weight: 600;
+  font-size: 1.05rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-links a:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-button-bg);
+  text-decoration: none;
+}
+
+/* Botones de autenticación */
+.auth-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.auth-buttons button {
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
+  border: none;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(230,150,120,0.4);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.auth-buttons button:hover {
+  background-color: var(--color-secondary);
+  color: white;
+}
+
+/* Contenedor principal (dentro del dashboard, contenido) */
+main {
+  background-color: var(--color-main-bg);
+  padding: 2rem 3rem;
+  margin: 1.5rem auto;
+  border-radius: 12px;
+  max-width: 1200px;
+  /*box-shadow: 0 4px 10px rgba(0,0,0,0.05);*/
+  min-height: 70vh;
+}
+
+/* Para el logo pequeño en la navbar si usas imagen */
+.logo img {
+  height: 40px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Responsive básico */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 0.8rem;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
   }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  
+  main {
+    margin: 1rem;
+    padding: 1rem 1.5rem;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

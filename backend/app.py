@@ -1,8 +1,8 @@
-# app.py
 from flask import Flask, request, jsonify
 from models import db, User
 import random
 import string
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://factunova:E13c17C12@localhost:5432/usuarios'
@@ -21,6 +21,9 @@ def register():
     phone = data.get('phone')
     role = data.get('role')
 
+    if not email or not password:
+        return jsonify({'error': 'Email y contraseña son obligatorios'}), 400
+
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email ya registrado'}), 400
 
@@ -31,9 +34,10 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    # Aquí idealmente enviarías el código de verificación por email.
     print(f"Código de verificación para {email}: {user.verification_code}")
 
-    return jsonify({'message': 'Usuario creado. Por favor verifica tu cuenta con el código enviado.'})
+    return jsonify({'message': 'Usuario creado. Por favor verifica tu cuenta con el código enviado.'}), 201
 
 @app.route('/verify', methods=['POST'])
 def verify():
@@ -55,6 +59,28 @@ def verify():
         return jsonify({'message': 'Usuario verificado correctamente'})
     else:
         return jsonify({'error': 'Código incorrecto'}), 400
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'error': 'Email y contraseña son obligatorios'}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    if not user.is_verified:
+        return jsonify({'error': 'Cuenta no verificada'}), 403
+
+    if user.check_password(password):
+        # Aquí podrías generar un token JWT para sesión, por ahora devolvemos mensaje simple
+        return jsonify({'message': f'Login exitoso para {user.email}', 'role': user.role}), 200
+    else:
+        return jsonify({'error': 'Contraseña incorrecta'}), 401
 
 with app.app_context():
     db.create_all()
