@@ -1,90 +1,30 @@
-from flask import Flask, request, jsonify
-from models import db, User
-import random
-import string
-from werkzeug.security import check_password_hash
+# backend/app.py
+from flask import Flask, jsonify
+from flask_cors import CORS
+from models import db
+from routes.auth_routes import auth_bp
+from routes.doc_routes import doc_routes
+from routes.user_routes import user_routes
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://factunova:E13c17C12@localhost:5432/usuarios'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:E13c17C12@localhost:5432/factunova'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db.init_app(app)  
+# CORS sólo para tu frontend React
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
-def generate_code(length=6):
-    return ''.join(random.choices(string.digits, k=length))
+# Inicializar db con la app
+db.init_app(app)
 
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-    phone = data.get('phone')
-    role = data.get('role')
+# Registrar blueprints
+app.register_blueprint(auth_bp)
+app.register_blueprint(doc_routes)
+app.register_blueprint(user_routes, url_prefix='/api/users')
 
-    if not email or not password:
-        return jsonify({'error': 'Email y contraseña son obligatorios'}), 400
-
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email ya registrado'}), 400
-
-    user = User(email=email, phone=phone, role=role)
-    user.set_password(password)
-    user.verification_code = generate_code()
-
-    db.session.add(user)
-    db.session.commit()
-
-    # Aquí idealmente enviarías el código de verificación por email.
-    print(f"Código de verificación para {email}: {user.verification_code}")
-
-    return jsonify({'message': 'Usuario creado. Por favor verifica tu cuenta con el código enviado.'}), 201
-
-@app.route('/verify', methods=['POST'])
-def verify():
-    data = request.json
-    email = data.get('email')
-    code = data.get('code')
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
-
-    if user.is_verified:
-        return jsonify({'message': 'Usuario ya verificado'})
-
-    if user.verification_code == code:
-        user.is_verified = True
-        user.verification_code = None
-        db.session.commit()
-        return jsonify({'message': 'Usuario verificado correctamente'})
-    else:
-        return jsonify({'error': 'Código incorrecto'}), 400
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-
-    if not email or not password:
-        return jsonify({'error': 'Email y contraseña son obligatorios'}), 400
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
-
-    if not user.is_verified:
-        return jsonify({'error': 'Cuenta no verificada'}), 403
-
-    if user.check_password(password):
-        # Aquí podrías generar un token JWT para sesión, por ahora devolvemos mensaje simple
-        return jsonify({'message': f'Login exitoso para {user.email}', 'role': user.role}), 200
-    else:
-        return jsonify({'error': 'Contraseña incorrecta'}), 401
-
+# Crear tablas al iniciar app (idealmente en un script aparte, pero sirve para pruebas)
 with app.app_context():
     db.create_all()
     print("Tablas creadas (si no existían)")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

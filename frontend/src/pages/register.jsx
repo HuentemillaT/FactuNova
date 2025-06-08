@@ -1,16 +1,7 @@
-//src/pages/register.jsx
+//frontend/src//pages/register.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../services/api";
-
-function formatearRut(rut) {
-  rut = rut.replace(/^0+/, "").replace(/\D/g, "");
-  if (rut.length <= 1) return rut;
-  const cuerpo = rut.slice(0, -1);
-  const dv = rut.slice(-1);
-  const cuerpoFormateado = cuerpo.replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1.");
-  return `${cuerpoFormateado}-${dv}`;
-}
 
 export default function Register({ setIsAuthenticated, setUserEmail }) {
   const [nombre, setNombre] = useState("");
@@ -18,6 +9,7 @@ export default function Register({ setIsAuthenticated, setUserEmail }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("Pyme"); // valor por defecto
   const [emailError, setEmailError] = useState("");
   const [accesoRestringido, setAccesoRestringido] = useState(false);
 
@@ -41,111 +33,167 @@ export default function Register({ setIsAuthenticated, setUserEmail }) {
 
     const emailFormateado = email.trim().toLowerCase();
 
-    if (
-      !emailFormateado.endsWith("@conductord.cl") &&
-      !emailFormateado.endsWith("@conductorav.cl") &&
-      !emailFormateado.endsWith("@adminlog.cl")
-    ) {
+    const allowedDomains = [
+      "@gmail.com",
+      "@hotmail.com",
+      "@outlook.com",
+      "@yahoo.com",
+      "@live.com",
+      "@icloud.com",
+    ];
+
+    const domainValid = allowedDomains.some((domain) =>
+      emailFormateado.endsWith(domain)
+    );
+
+    if (!domainValid) {
       setEmailError(
-        "El correo debe ser de dominio @conductord.cl, @conductorav.cl o @adminlog.cl"
+        `El correo debe ser de uno de estos dominios: ${allowedDomains.join(
+          ", "
+        )}`
       );
+      return;
+    }
+    const validarRut = (rut) => {
+      return /^[0-9]+-[0-9kK]{1}$/.test(rut); // Ej: 12345678-9
+    };
+
+    if (!validarRut(rut)) {
+      alert("El RUT ingresado no es válido.");
       return;
     }
 
     try {
-      const response = await axios.post("/auth/register", {
+      const response = await axios.post("/register", {
         name: nombre,
-        rut,
+        rut, // si quieres enviar rut, asegúrate que backend lo acepte también
         email: emailFormateado,
         password,
+        role,  // envías el rol seleccionado
       });
 
-      const { token, user } = response.data;
+      alert(
+        response.data.message ||
+          "Usuario creado correctamente. Por favor verifica tu cuenta."
+      );
 
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("userEmail", user.email);
-      localStorage.setItem("userNombre", user.name);
-      setIsAuthenticated?.(true);
-      setUserEmail?.(user.email);
-      navigate("/dashboard/perfil");
+      navigate("/login");
     } catch (err) {
       console.error("Error al registrar usuario:", err);
-      const mensaje = err.response?.data?.message || "Error al registrar usuario";
+      const mensaje = err.response?.data?.error || "Error al registrar usuario";
       alert(mensaje);
     }
   };
 
-  if (accesoRestringido) {
-    return (
-      <div className="text-center mt-8">
-        <h3 className="text-xl font-semibold">
-          Ya tienes una sesión activa o estás registrado.
-        </h3>
-        <p className="mt-2">Redirígete al perfil o cierra sesión para registrar una nueva cuenta.</p>
-      </div>
-    );
+ useEffect(() => {
+  const token = localStorage.getItem("authToken");
+  if (token) {
+    setIsAuthenticated?.(true);
+    setAccesoRestringido(true);
+    setTimeout(() => navigate("/perfil"), 3000); // redirige después de 3 segundos
   }
+}, [setIsAuthenticated, navigate]);
+if (accesoRestringido) {
+  return (
+    <div className="text-center mt-8">
+      <h3 className="text-xl font-semibold">
+        Ya tienes una sesión activa o estás registrado.
+      </h3>
+      <p className="mt-2">
+        Serás redirigido a tu perfil en unos segundos...
+      </p>
+    </div>
+  );
+}
 
   return (
-    <div className="p-8 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Registro de Usuario</h2>
-      <form onSubmit={handleRegister} className="flex flex-col gap-4">
-        <input
-          name="nombre"
-          placeholder="Nombre completo"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          required
-          className="border p-2 rounded"
-        />
+    <div className="registro-container">
+      <form onSubmit={handleRegister} className="registro-form">
+        <h2 className="registro-title">Registro de Usuario</h2>
 
-        <input
-          name="rut"
-          placeholder="RUT"
-          value={rut}
-          onChange={(e) => setRut(formatearRut(e.target.value))}
-          required
-          className="border p-2 rounded"
-        />
+        <div className="registro-group">
+          <label htmlFor="nombre">Nombre completo</label>
+          <input
+            id="nombre"
+            name="nombre"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            required
+            className="registro-input"
+          />
+        </div>
 
-        <input
-          name="email"
-          type="email"
-          placeholder="Correo"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setEmailError("");
-          }}
-          required
-          className="border p-2 rounded"
-        />
-        {emailError && <p className="text-red-600">{emailError}</p>}
+        <div className="registro-group">
+          <label htmlFor="rut">RUT</label>
+          <input
+            id="rut"
+            name="rut"
+            value={rut}
+            onChange={(e) => setRut(e.target.value)} // si quieres formatear, hazlo acá
+            required
+            className="registro-input"
+          />
+        </div>
 
-        <input
-          name="password"
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="border p-2 rounded"
-        />
+        <div className="registro-group">
+          <label htmlFor="email">Correo electrónico</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setEmailError("");
+            }}
+            required
+            className="registro-input"
+          />
+          {emailError && <p className="error-text">{emailError}</p>}
+        </div>
 
-        <input
-          name="confirmPassword"
-          type="password"
-          placeholder="Confirmar contraseña"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          className="border p-2 rounded"
-        />
+        <div className="registro-group">
+          <label htmlFor="password">Contraseña</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="registro-input"
+          />
+        </div>
 
-        <button
-          type="submit"
-          className="bg-green-600 text-white p-2 rounded hover:bg-green-700"
-        >
+        <div className="registro-group">
+          <label htmlFor="confirmPassword">Confirmar contraseña</label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className="registro-input"
+          />
+        </div>
+
+        <div className="registro-group">
+          <label htmlFor="role">Rol</label>
+          <select
+            id="role"
+            name="role"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+            className="registro-input"
+          >
+            <option value="Pyme">Pyme</option>
+            <option value="Freelancer">Freelancer</option>
+          </select>
+        </div>
+
+        <button type="submit" className="registro-btn">
           Registrarse
         </button>
       </form>

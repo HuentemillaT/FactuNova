@@ -1,4 +1,3 @@
-// src/pages/login.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../services/api";
@@ -10,7 +9,7 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken"); // Aquí el mismo nombre que usas en registro
     if (token) {
       setIsAuthenticated?.(true);
       setMostrarCuadro(true);
@@ -22,26 +21,31 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
     e.preventDefault();
 
     // Validar formato de correo electrónico
-    if (!/\S+@\S+\.\S+/.test(email)) {
+    if (!/\S+@\S+\.\S+/.test(email.trim())) {
       alert("Por favor ingresa un correo válido");
       return;
     }
 
     try {
-      const res = await axios.post("/auth/login", { email, password });
+      const res = await axios.post("/auth/login", {
+        email: email.trim().toLowerCase(), // formatea el email igual que en registro
+        password,
+      });
+
       const { token, user } = res.data;
 
-      localStorage.setItem("token", token);
+      localStorage.setItem("authToken", token); // Consistencia con el nombre usado en registro
       localStorage.setItem("userEmail", user.email);
-      localStorage.setItem("userNombre", user.nombre); // Opcional, si lo devuelve
+      localStorage.setItem("userNombre", user.name || user.nombre); // según lo que devuelva backend
 
       setIsAuthenticated?.(true);
       setUserEmail?.(user.email);
 
       navigate("/dashboard/perfil");
     } catch (err) {
-      console.error(err);
-      const msg = err.response?.data?.message || "Credenciales inválidas o error del servidor";
+      console.error("Error en login:", err);
+      const msg =
+        err.response?.data?.message || "Credenciales inválidas o error del servidor";
       alert(msg);
     }
   };
@@ -69,6 +73,7 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
           onChange={(e) => setEmail(e.target.value)}
           required
           className="border p-2 rounded"
+          autoComplete="username"
         />
         <input
           type="password"
@@ -77,6 +82,7 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
           onChange={(e) => setPassword(e.target.value)}
           required
           className="border p-2 rounded"
+          autoComplete="current-password"
         />
         <button
           type="submit"

@@ -119,3 +119,80 @@ main {
     padding: 1rem 1.5rem;
   }
 }
+/* CSS para formulario de Registro */
+/* Estilos modernos para el formulario de registro */
+.registro-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  background: linear-gradient(to right, #dfe9f3, #ffffff);
+  padding: 1rem;
+}
+
+.registro-form {
+  background-color: #fff;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+}
+
+.registro-title {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #333;
+}
+
+.registro-group {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.registro-group label {
+  margin-bottom: 0.5rem;
+  color: #444;
+  font-weight: 600;
+}
+
+.registro-input {
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.registro-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.registro-btn {
+  width: 100%;
+  padding: 0.9rem;
+  background-color: #28a745;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.registro-btn:hover {
+  background-color: #218838;
+}
+
+.error-text {
+  color: #d9534f;
+  font-size: 0.9rem;
+  margin-top: -0.8rem;
+  margin-bottom: 0.8rem;
+}
+/* FIN CSS Registro  */

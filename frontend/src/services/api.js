@@ -1,9 +1,9 @@
-//services/api.js
+// src/services/api.js
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "https://<TU-BACKEND>.railway.app/api", // Reemplaza con tu URL real
-  headers: {
+ baseURL: "http://localhost:5000",  
+ headers: {
     "Content-Type": "application/json",
   },
 });

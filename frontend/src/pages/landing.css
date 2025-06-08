@@ -1,9 +1,17 @@
 .landing-container {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding: 2rem;
-  max-width: 960px;
+  padding: 150px 400px;
+  max-width: 1600px;
   margin: auto;
   color: #6D6875;
+
+  /* Agregado para centrar todo vertical y horizontalmente */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  
+  text-align: center;
 }
 
 header {
