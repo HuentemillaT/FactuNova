@@ -1,7 +1,5 @@
-# Rutas de usuario
-# backend/routes/user_routes.py
-
 from flask import Blueprint, request, jsonify
+
 from models import db, User
 from utils.auth import login_required, roles_required
 
@@ -20,13 +18,13 @@ def perfil():
         'is_verified': user.is_verified
     })
 
+
 @user_routes.route('/perfil', methods=['PUT'])
 @login_required
 def editar_perfil():
     user = request.user
     data = request.json
 
-    # Sólo permite cambiar campos específicos
     name = data.get('name')
     rut = data.get('rut')
     email = data.get('email')
@@ -36,13 +34,13 @@ def editar_perfil():
     if rut:
         user.rut = rut
     if email:
-        # Verificar que email nuevo no exista en otro usuario
         if User.query.filter(User.email == email, User.id != user.id).first():
             return jsonify({'error': 'Email ya en uso'}), 400
         user.email = email
 
     db.session.commit()
     return jsonify({'message': 'Perfil actualizado correctamente'})
+
 
 @user_routes.route('/usuarios', methods=['GET'])
 @login_required
@@ -58,6 +56,7 @@ def listar_usuarios():
         'is_verified': u.is_verified
     } for u in usuarios])
 
+
 @user_routes.route('/perfil/password', methods=['PUT'])
 @login_required
 def cambiar_password():
@@ -67,15 +66,22 @@ def cambiar_password():
     old_password = data.get('old_password')
     new_password = data.get('new_password')
 
+    # Validar que se envíen ambas contraseñas
     if not old_password or not new_password:
         return jsonify({'error': 'Contraseña antigua y nueva son requeridas'}), 400
 
+    # Verificar que la contraseña antigua coincida con la almacenada
     if not user.check_password(old_password):
         return jsonify({'error': 'Contraseña antigua incorrecta'}), 401
 
+    # Actualizar con la nueva contraseña (se asume que set_password hace el hash)
     user.set_password(new_password)
+
+    # Guardar cambios en la base de datos
     db.session.commit()
+
     return jsonify({'message': 'Contraseña actualizada correctamente'})
+
 
 @user_routes.route('/usuarios/<int:user_id>', methods=['DELETE'])
 @login_required

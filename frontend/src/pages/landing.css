@@ -1,3 +1,4 @@
+/*landing.css*/
 .landing-container {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding: 150px 400px;
@@ -21,6 +22,7 @@ header {
 
 .auth-buttons {
   margin-top: 1rem;
+  justify-content: center;
 }
 
 .btn {
@@ -31,11 +33,6 @@ header {
   border-radius: 5px;
   text-decoration: none;
   font-weight: bold;
-}
-
-.btn-secondary {
-  background-color: #FFB4A2;
-  color: #6D6875;
 }
 
 .services h2, .contact h2 {

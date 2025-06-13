@@ -1,34 +1,24 @@
-# Decoradores de autenticación
 from functools import wraps
 from flask import request, jsonify
-import jwt
-from config import SECRET_KEY
-from models.user import User, db
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from models import User
 
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        if 'Authorization' in request.headers:
-            bearer = request.headers['Authorization']
-            token = bearer.split()[1] if ' ' in bearer else bearer
-
-        if not token:
-            return jsonify({'message': 'Token requerido'}), 401
-
-        try:
-            data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-            user = User.query.get(data['id'])
-            if not user:
-                return jsonify({'message': 'Usuario no encontrado'}), 401
-            request.user = user
-        except jwt.ExpiredSignatureError:
-            return jsonify({'message': 'Token expirado'}), 401
-        except Exception:
-            return jsonify({'message': 'Token inválido'}), 401
-
-        return f(*args, **kwargs)
-    return decorated
+def login_required(fn):
+    @wraps(fn)
+    @jwt_required()
+    def wrapper(*args, **kwargs):
+        user_id = get_jwt_identity()
+        if not user_id:
+            return jsonify({'error': 'Token inválido o expirado'}), 401
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
+        
+        # Asignamos el usuario a request para que esté disponible en la función
+        request.user = user
+        
+        return fn(*args, **kwargs)
+    return wrapper
 
 def roles_required(*roles):
     def wrapper(f):

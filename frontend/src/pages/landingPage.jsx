@@ -10,7 +10,7 @@ const LandingPage = () => {
         <p>Tu solución completa para gestión de facturas y documentos.</p>
         <div className="auth-buttons">
           <Link to="/login" className="btn">Iniciar Sesión</Link>
-          <Link to="/register" className="btn btn-secondary">Registrarse</Link>
+          <Link to="/register" className="btn">Registrarse</Link>
         </div>
       </header>
 

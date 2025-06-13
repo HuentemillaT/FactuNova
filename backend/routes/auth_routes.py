@@ -1,10 +1,8 @@
-# Rutas de autenticación
-# backend/routes/auth_routes.py
-
 from flask import Blueprint, request, jsonify
 from models import db, User
 import random
 import string
+from flask_jwt_extended import create_access_token
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -21,20 +19,16 @@ def register():
         password = data.get('password')
         role = data.get('role')
 
-        # Validar campos obligatorios
         if not name or not email or not password or not role or not rut:
             return jsonify({'error': 'Todos los campos son obligatorios'}), 400
 
-        # Validar si email existe
         if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Email ya registrado'}), 400
 
-        # Crear usuario y setear password
         user = User(name=name, rut=rut, email=email, role=role)
         user.set_password(password)
         user.verification_code = generate_code()
 
-        # Agregar y guardar en BD
         db.session.add(user)
         db.session.commit()
 
@@ -43,7 +37,7 @@ def register():
         return jsonify({'message': 'Usuario creado. Verifica tu cuenta con el código enviado.'}), 201
     except Exception as e:
         import traceback
-        traceback.print_exc()  # Imprime el error completo en consola
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route('/verify', methods=['POST'])
@@ -80,15 +74,19 @@ def login():
     if not user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    if not user.is_verified:
-        return jsonify({'error': 'Cuenta no verificada'}), 403
+    # if not user.is_verified:
+    #    return jsonify({'error': 'Cuenta no verificada'}), 403
 
     if user.check_password(password):
+        token = create_access_token(identity=str(user.id))
         return jsonify({
-            'message': f'Login exitoso para {user.email}',
-            'role': user.role,
-            'user_id': user.id,
-            'name': user.name
+            'token': token,
+            'user': {
+                'email': user.email,
+                'role': user.role,
+                'id': user.id,
+                'name': user.name,
+            }
         }), 200
     else:
         return jsonify({'error': 'Contraseña incorrecta'}), 401

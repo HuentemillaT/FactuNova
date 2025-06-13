@@ -1,4 +1,3 @@
-# Rutas de documentos
 import os
 from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
@@ -8,9 +7,13 @@ from config import UPLOAD_FOLDER
 
 doc_routes = Blueprint('doc_routes', __name__)
 
-@doc_routes.route('/upload', methods=['POST'])
+@doc_routes.route('/upload', methods=['POST', 'OPTIONS'])
 @login_required
 def upload_doc():
+    if request.method == 'OPTIONS':
+        # Responder preflight CORS
+        return '', 204
+
     if 'file' not in request.files:
         return jsonify({'message': 'Archivo no encontrado'}), 400
 

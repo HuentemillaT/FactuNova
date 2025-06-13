@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "../services/api";
+import '../App.css'; // Para estilos propios
 
 export default function Login({ setIsAuthenticated, setUserEmail }) {
   const [email, setEmail] = useState("");
@@ -9,7 +10,7 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken"); // Aquí el mismo nombre que usas en registro
+    const token = localStorage.getItem("authToken");
     if (token) {
       setIsAuthenticated?.(true);
       setMostrarCuadro(true);
@@ -20,7 +21,6 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Validar formato de correo electrónico
     if (!/\S+@\S+\.\S+/.test(email.trim())) {
       alert("Por favor ingresa un correo válido");
       return;
@@ -28,15 +28,15 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
 
     try {
       const res = await axios.post("/auth/login", {
-        email: email.trim().toLowerCase(), // formatea el email igual que en registro
+        email: email.trim().toLowerCase(),
         password,
       });
 
       const { token, user } = res.data;
 
-      localStorage.setItem("authToken", token); // Consistencia con el nombre usado en registro
+      localStorage.setItem("authToken", token);
       localStorage.setItem("userEmail", user.email);
-      localStorage.setItem("userNombre", user.name || user.nombre); // según lo que devuelva backend
+      localStorage.setItem("userNombre", user.name || user.nombre);
 
       setIsAuthenticated?.(true);
       setUserEmail?.(user.email);
@@ -51,11 +51,26 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
   };
 
   return (
-    <div className="p-8 max-w-md mx-auto relative">
+    <div className="auth-container">
       {mostrarCuadro && (
-        <div className="absolute top-0 left-0 right-0 bg-yellow-200 text-black p-4 rounded shadow mb-4">
+        <div
+          style={{
+            backgroundColor: "#fff3cd",
+            color: "#856404",
+            padding: "1rem",
+            borderRadius: "8px",
+            marginBottom: "1rem",
+            position: "relative",
+          }}
+        >
           <span
-            className="float-right cursor-pointer font-bold"
+            style={{
+              position: "absolute",
+              top: "0.2rem",
+              right: "0.5rem",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
             onClick={() => setMostrarCuadro(false)}
           >
             ×
@@ -64,32 +79,44 @@ export default function Login({ setIsAuthenticated, setUserEmail }) {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-4">Iniciar sesión</h2>
-      <form onSubmit={handleLogin} className="flex flex-col gap-4">
-        <input
-          type="email"
-          placeholder="Correo"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="border p-2 rounded"
-          autoComplete="username"
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="border p-2 rounded"
-          autoComplete="current-password"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-        >
+      <form onSubmit={handleLogin} className="auth-form">
+        <h2 className="auth-title">Iniciar sesión</h2>
+
+        <div className="auth-group">
+          <label htmlFor="email">Correo electrónico</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="Correo"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="auth-input"
+            autoComplete="username"
+          />
+        </div>
+
+        <div className="auth-group">
+          <label htmlFor="password">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="auth-input"
+            autoComplete="current-password"
+          />
+        </div>
+
+        <button type="submit" className="auth-btn">
           Entrar
         </button>
+
+        <Link to="/" className="auth-btn auth-btn-back">
+          Volver al Inicio
+        </Link>
       </form>
     </div>
   );

@@ -1,11 +1,12 @@
 //frontend/src//pages/register.jsx
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "../services/api";
+import '../App.css'; // Para estilos propios
 
 export default function Register({ setIsAuthenticated, setUserEmail }) {
   const [nombre, setNombre] = useState("");
-  const [rut, setRut] = useState("");
+  const [rut, setRut] = useState(""); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -94,24 +95,22 @@ export default function Register({ setIsAuthenticated, setUserEmail }) {
   }
 }, [setIsAuthenticated, navigate]);
 if (accesoRestringido) {
-  return (
-    <div className="text-center mt-8">
-      <h3 className="text-xl font-semibold">
-        Ya tienes una sesión activa o estás registrado.
-      </h3>
-      <p className="mt-2">
-        Serás redirigido a tu perfil en unos segundos...
-      </p>
-    </div>
-  );
-}
+    return (
+      <div className="text-center mt-8">
+        <h3 className="text-xl font-semibold">
+          Ya tienes una sesión activa o estás registrado.
+        </h3>
+        <p className="mt-2">Serás redirigido a tu perfil en unos segundos...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="registro-container">
-      <form onSubmit={handleRegister} className="registro-form">
-        <h2 className="registro-title">Registro de Usuario</h2>
+    <div className="auth-container">
+      <form onSubmit={handleRegister} className="auth-form">
+        <h2 className="auth-title">Registro de Usuario</h2>
 
-        <div className="registro-group">
+        <div className="auth-group">
           <label htmlFor="nombre">Nombre completo</label>
           <input
             id="nombre"
@@ -119,23 +118,23 @@ if (accesoRestringido) {
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             required
-            className="registro-input"
+            className="auth-input"
           />
         </div>
 
-        <div className="registro-group">
+        <div className="auth-group">
           <label htmlFor="rut">RUT</label>
           <input
             id="rut"
             name="rut"
             value={rut}
-            onChange={(e) => setRut(e.target.value)} // si quieres formatear, hazlo acá
+            onChange={(e) => setRut(e.target.value)}
             required
-            className="registro-input"
+            className="auth-input"
           />
         </div>
 
-        <div className="registro-group">
+        <div className="auth-group">
           <label htmlFor="email">Correo electrónico</label>
           <input
             id="email"
@@ -147,12 +146,12 @@ if (accesoRestringido) {
               setEmailError("");
             }}
             required
-            className="registro-input"
+            className="auth-input"
           />
           {emailError && <p className="error-text">{emailError}</p>}
         </div>
 
-        <div className="registro-group">
+        <div className="auth-group">
           <label htmlFor="password">Contraseña</label>
           <input
             id="password"
@@ -161,11 +160,11 @@ if (accesoRestringido) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="registro-input"
+            className="auth-input"
           />
         </div>
 
-        <div className="registro-group">
+        <div className="auth-group">
           <label htmlFor="confirmPassword">Confirmar contraseña</label>
           <input
             id="confirmPassword"
@@ -174,11 +173,11 @@ if (accesoRestringido) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className="registro-input"
+            className="auth-input"
           />
         </div>
 
-        <div className="registro-group">
+        <div className="auth-group">
           <label htmlFor="role">Rol</label>
           <select
             id="role"
@@ -186,16 +185,20 @@ if (accesoRestringido) {
             value={role}
             onChange={(e) => setRole(e.target.value)}
             required
-            className="registro-input"
+            className="auth-input"
           >
             <option value="Pyme">Pyme</option>
             <option value="Freelancer">Freelancer</option>
           </select>
         </div>
 
-        <button type="submit" className="registro-btn">
+        <button type="submit" className="auth-btn">
           Registrarse
         </button>
+
+        <Link to="/" className="auth-btn auth-btn-back">
+          Volver al Inicio
+        </Link>
       </form>
     </div>
   );
