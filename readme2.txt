@@ -8,3 +8,8 @@ Enlaces con la IA (ChatGPT)
 
 Enlace pagina KAME ERP (pagina de referencia)
 -https://contenido.kame.cl/sistema-erp-1?utm_source=piloto-gads&utm_medium=piloto-gads&utm_term=facturaci%C3%B3n%20electr%C3%B3nica&utm_campaign=Piloto-General&utm_source=adwords&utm_medium=ppc&hsa_acc=5967122986&hsa_cam=20485133175&hsa_grp=152398404603&hsa_ad=671164363389&hsa_src=g&hsa_tgt=kwd-107193305&hsa_kw=facturaci%C3%B3n%20electr%C3%B3nica&hsa_mt=b&hsa_net=adwords&hsa_ver=3&gad_source=1&gad_campaignid=20485133175&gclid=Cj0KCQjwxo_CBhDbARIsADWpDH4SeOB-iU3jg43lFHf9Mgz7W3kLJRzY5EbCrgoqy_QARg3erXsnZgAaAk1qEALw_wcB
+
+
+
+Api key 
+898207cc0661173cb7663c51f0421807

@@ -1,0 +1,90 @@
+/*CSS gastos */
+/* Estilos generales */
+.auth-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  background: #FFF8F0;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.auth-title {
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.auth-group {
+  margin-bottom: 1rem;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-top: 5px;
+  background-color: #fff;
+}
+
+.auth-btn {
+  background-color: #E29578;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.auth-btn:hover {
+  background-color: #d37c64;
+}
+
+.auth-btn-secondary {
+  background-color: #ccc;
+  color: #333;
+}
+
+.auth-btn-secondary:hover {
+  background-color: #bbb;
+}
+
+hr {
+  margin: 2rem 0;
+  border: 1px solid #ddd;
+}
+
+/* Tabla de gastos */
+.auth-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.auth-table th,
+.auth-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.auth-table th {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+/* Resumen */
+p {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+}
+
+strong {
+  color: #444;
+}
+/*Fin css gastos*/
