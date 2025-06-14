@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 
 from models import db, User
 from utils.auth import login_required, roles_required
@@ -8,7 +8,7 @@ user_routes = Blueprint('user_routes', __name__)
 @user_routes.route('/perfil', methods=['GET'])
 @login_required
 def perfil():
-    user = request.user
+    user = g.user
     return jsonify({
         'id': user.id,
         'name': user.name,
@@ -22,7 +22,7 @@ def perfil():
 @user_routes.route('/perfil', methods=['PUT'])
 @login_required
 def editar_perfil():
-    user = request.user
+    user = g.user
     data = request.json
 
     name = data.get('name')
@@ -60,7 +60,7 @@ def listar_usuarios():
 @user_routes.route('/perfil/password', methods=['PUT'])
 @login_required
 def cambiar_password():
-    user = request.user
+    user = g.user
     data = request.json
 
     old_password = data.get('old_password')

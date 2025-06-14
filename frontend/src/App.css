@@ -384,4 +384,9 @@ p {
 strong {
   color: #444;
 }
+
+.guardar {
+  margin-top: 30px;  
+}
+
 /*Fin css gastos*/

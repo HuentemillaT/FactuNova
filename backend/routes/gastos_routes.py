@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify
+#route/gastos_routes.py
+from flask import Blueprint, request, jsonify, g
 from models import db, Gasto
 from utils.auth import login_required
 
@@ -7,7 +8,7 @@ gasto_routes = Blueprint('gasto_routes', __name__)
 @gasto_routes.route('/gastos', methods=['GET'])
 @login_required
 def obtener_gastos():
-    usuario = request.user
+    usuario = g.user
     gastos = Gasto.query.filter_by(usuario_id=usuario.id).all()
     return jsonify([g.to_dict() for g in gastos])
 
@@ -20,7 +21,7 @@ def crear_gasto():
         monto=data['monto'],
         categoria=data['categoria'],
         fecha=data['fecha'],
-        usuario_id=request.user.id
+        usuario_id=g.user.id
     )
     db.session.add(nuevo)
     db.session.commit()
@@ -30,7 +31,7 @@ def crear_gasto():
 @login_required
 def editar_gasto(id):
     gasto = Gasto.query.get(id)
-    if not gasto or gasto.usuario_id != request.user.id:
+    if not gasto or gasto.usuario_id != g.user.id:
         return jsonify({'error': 'Gasto no encontrado'}), 404
     data = request.json
     gasto.descripcion = data['descripcion']
@@ -44,7 +45,7 @@ def editar_gasto(id):
 @login_required
 def eliminar_gasto(id):
     gasto = Gasto.query.get(id)
-    if not gasto or gasto.usuario_id != request.user.id:
+    if not gasto or gasto.usuario_id != g.user.id:
         return jsonify({'error': 'Gasto no encontrado'}), 404
     db.session.delete(gasto)
     db.session.commit()

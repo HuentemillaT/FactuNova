@@ -1,3 +1,4 @@
+/*frontend/pages/gastos.jsx */
 import React, { useState, useEffect } from 'react';
 import '../App.css';
 import { construirTasasCambio } from './tasas_cambio';
@@ -96,6 +97,32 @@ function Gastos() {
   }, 0);
 
   const balance = ingresoTotalNumerico - totalGastos;
+
+  const guardarResumen = async () => {
+  const resumen = {
+      ingreso_total: ingresoTotalNumerico,
+      total_gastos: totalGastos,
+      balance: balance,
+      moneda: moneda
+    };
+
+    try {
+      const res = await fetch('http://localhost:5000/api/resumen', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('authToken')}` // si usas JWT
+        },
+        credentials: "include",
+        body: JSON.stringify(resumen)
+      });
+
+      const data = await res.json();
+      alert(data.message);
+    } catch (error) {
+      console.error('Error al guardar resumen:', error);
+    }
+  };
 
   return (
     <div className="gasto-container">
@@ -225,7 +252,40 @@ function Gastos() {
           ))}
         </tbody>
       </table>
-    </div>
+      <div className='guardar'>
+          <button
+          className="gasto-btn"
+          onClick={async () => {
+            try {
+              const token = localStorage.getItem('authToken'); 
+              console.log(token);
+              const res = await fetch('http://localhost:5000/api/resumen', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  ingreso_total: ingresoTotalNumerico,
+                  total_gastos: totalGastos,
+                  balance: balance,
+                  moneda: moneda,
+                }),
+              });
+
+              const data = await res.json();
+              alert(data.message || 'Resumen guardado');
+            } catch (error) {
+              console.error('Error al guardar el resumen:', error);
+              alert('Error al guardar resumen');
+            }
+          }}
+        >
+          Guardar Resumen
+        </button>
+      </div>
+    </div>  
+    
   );
 }
 

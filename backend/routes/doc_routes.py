@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from werkzeug.utils import secure_filename
 from models.document import Document, db
 from utils.auth import login_required
@@ -31,7 +31,7 @@ def upload_doc():
         filename=filename,
         originalname=file.filename,
         category=category,
-        user_id=request.user.id
+        user_id=g.user.id
     )
     db.session.add(document)
     db.session.commit()

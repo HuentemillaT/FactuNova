@@ -1,4 +1,4 @@
-// tasas_cambio.js
+// pages/tasas_cambio.js
 export function construirTasasCambio(data) {
   const quotes = data.quotes;
 
