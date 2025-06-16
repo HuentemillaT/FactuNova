@@ -1,1 +1,7 @@
 backend/.env
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+
+# Entorno virtual
+backend/venv/
