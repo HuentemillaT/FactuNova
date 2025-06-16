@@ -65,7 +65,7 @@ export default function Register({ setIsAuthenticated, setUserEmail }) {
     }
 
     try {
-      const response = await axios.post("/register", {
+      const response = await axios.post("/auth/register", {
         name: nombre,
         rut, // si quieres enviar rut, asegúrate que backend lo acepte también
         email: emailFormateado,
