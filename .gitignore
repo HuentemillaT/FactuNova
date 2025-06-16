@@ -1,7 +1,12 @@
+#credenciales base de datos en postgreSQL
 backend/.env
+
 # Archivos compilados de Python
 __pycache__/
 *.py[cod]
 
 # Entorno virtual
 backend/venv/
+
+# Carpeta de caché de vite (frontend)
+frontend/.vite/
