@@ -10,3 +10,10 @@ backend/venv/
 
 # Carpeta de caché de vite (frontend)
 frontend/.vite/
+
+# Cache de Python
+*.pyc
+__pycache__/
+
+# Entorno virtual
+venv/
