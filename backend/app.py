@@ -1,33 +1,42 @@
-from flask import Flask, jsonify
+# backend/app.py
+import os
+from flask import Flask, send_from_directory
 from flask_cors import CORS
-from models import db
+from extensions import db
+from flask_jwt_extended import JWTManager
+
 from routes.auth_routes import auth_bp
 from routes.doc_routes import doc_routes
 from routes.user_routes import user_routes
 from routes.resumen_routes import resumen_routes
-from flask_jwt_extended import JWTManager  
+from routes.facturas import facturas_bp  # mantener aquí
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:E13c17C12@localhost:5432/factunova'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = '1709007a83fb1638c6a6da9c0af42e2b02532775c8259af763eb0c3b22daafd8'
 
-# ✅ CORS global para el frontend en React (localhost:5173)
+# Carpeta base para subir archivos
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
-
-# Inicializa JWT
 jwt = JWTManager(app)
-
-# Inicializa DB
 db.init_app(app)
 
-# Registrar blueprints
+# Blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(doc_routes, url_prefix='/api/docs')
 app.register_blueprint(user_routes, url_prefix='/api/users')
-app.register_blueprint(resumen_routes, url_prefix='/api')  # <- correcto así
+app.register_blueprint(resumen_routes, url_prefix='/api')
+app.register_blueprint(facturas_bp, url_prefix='/api')
 
-# Crear tablas (solo para pruebas)
+# RUTA para servir documentos del SII (estáticos)
+@app.route('/uploads/sii/<path:filename>')
+def serve_sii_file(filename):
+    return send_from_directory(os.path.join(UPLOAD_FOLDER, 'sii'), filename)
+
+# Crear tablas al iniciar
 with app.app_context():
     db.create_all()
     print("Tablas creadas (si no existían)")

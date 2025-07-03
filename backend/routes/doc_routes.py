@@ -37,3 +37,17 @@ def upload_doc():
     db.session.commit()
 
     return jsonify({'message': 'Documento subido con éxito'})
+
+@doc_routes.route('/sii', methods=['GET'])
+def listar_documentos_sii():
+    documentos = [
+        {
+            "nombre": "Certificado Inicio de Actividades",
+            "url": "http://localhost:5000/uploads/sii/certificado-inicio.pdf"
+        },
+        {
+            "nombre": "Resolución SII 2024",
+            "url": "http://localhost:5000/uploads/sii/resolucion.pdf"
+        }
+    ]
+    return jsonify(documentos)
