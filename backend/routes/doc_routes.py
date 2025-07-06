@@ -1,3 +1,4 @@
+# backend/routes/doc_routes.py
 import os
 from flask import Blueprint, request, jsonify, g
 from werkzeug.utils import secure_filename
@@ -84,3 +85,6 @@ def listar_facturas():
             'pdf_url': f.get_url()
         })
     return jsonify(resultado)
+
+
+

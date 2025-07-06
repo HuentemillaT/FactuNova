@@ -15,7 +15,6 @@ const formatearRut = (rutSinFormato) => {
   return cuerpoConPuntos + '-' + dv;
 };
 
-
 const validarRut = (rutCompleto) => {
   if (!rutCompleto || rutCompleto.indexOf('-') === -1) return false;
   const [rut, dv] = rutCompleto.replace(/\./g, '').split('-');
@@ -29,7 +28,6 @@ const validarRut = (rutCompleto) => {
   return dv.toUpperCase() === dvCalculado;
 };
 
-
 const guiaPorPaso = {
   1: "Ingrese los datos del Emisor...",
   2: "Ingrese los datos del Receptor...",
@@ -38,7 +36,6 @@ const guiaPorPaso = {
   5: "Confirme la factura y envíe..."
 };
 
-
 const FacturaInteractiva = () => {
   const [paso, setPaso] = useState(1);
   const facturaRef = useRef(null);
@@ -46,14 +43,13 @@ const FacturaInteractiva = () => {
   const [emisor, setEmisor] = useState({ rut: '', razonSocial: '', giro: '', direccion: '', comuna: '' });
   const [receptor, setReceptor] = useState({ rut: '', razonSocial: '', giro: '', direccion: '', comuna: '' });
   const [items, setItems] = useState([{ descripcion: '', cantidad: 1, precioUnitario: 0 }]);
+  const [numeroFactura, setNumeroFactura] = useState('FAC-2025-0001'); // número de factura falso fijo
 
   const handleChange = (setter, e) => {
     const { name, value } = e.target;
     const nuevoValor = name === 'rut' ? formatearRut(value) : value;
     setter(prev => ({ ...prev, [name]: nuevoValor }));
   };
-
-  const [numeroFactura, setNumeroFactura] = useState('FAC-2025-0001'); // número de factura falso fijo
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
@@ -108,88 +104,107 @@ const FacturaInteractiva = () => {
 
   const handleEnviar = async () => {
     try {
-      const response = await fetch('http://localhost:5000/facturas', {
+      // Generar timbre
+      const timbreGenerado = generarTimbre();
+
+      // Crear payload completo para enviar
+      const facturaPayload = {
+        numero_factura: numeroFactura,
+        fecha_emision: fechaEmision,
+        emisor,
+        receptor,
+        items,
+        timbre: timbreGenerado,
+        total
+      };
+
+      // Enviar datos JSON al backend
+      const response = await fetch('http://localhost:5000/api/facturas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('authToken')}`
         },
-        body: JSON.stringify({
-          descripcion: items.map(i => i.descripcion).join(', '),
-          monto: total,
-          timbre: generarTimbre(),
-        })
+        body: JSON.stringify(facturaPayload)
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        setNumeroFactura(data.numero_factura);  // actualizar número factura
-        alert("Factura registrada y PDF generado.");
-        handleDescargarPDF();
-      } else {
-        alert("Error al enviar factura: " + data.msg);
+      if (!response.ok) {
+        alert("Error al enviar factura: " + (data.msg || 'Error desconocido'));
+        return;
       }
+
+      setNumeroFactura(data.numero_factura || numeroFactura);
+
+      alert("Factura registrada correctamente.");
+
+      // Descargar PDF generado a partir del HTML actual
+      handleDescargarPDF();
+
     } catch (error) {
       console.error(error);
       alert("Error de conexión.");
     }
   };
 
-
   const handleDescargarPDF = () => {
+    if (!facturaRef.current) return;
     html2pdf().from(facturaRef.current).set({
       margin: 10,
-      filename: 'factura.pdf',
+      filename: `factura_${numeroFactura}.pdf`,
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     }).save();
   };
-  
 
   const inputStyle = {
     padding: '8px',
     borderRadius: '5px',
     border: '1px solid #ccc',
     backgroundColor: '#fefefe',
-    color: '#333'
+    color: '#333',
+    marginBottom: '8px',
+    width: '100%',
+    boxSizing: 'border-box'
   };
 
   return (
     <div style={{ maxWidth: 700, margin: 'auto', padding: 20, fontFamily: 'Arial' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-          {[1, 2, 3, 4, 5].map(p => (
-            <div
-              key={p}
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                padding: 10,
-                background: p === paso ? '#007bff' : '#ccc',
-                color: p === paso ? 'white' : 'black',
-                borderRadius: 5,
-                margin: '0 5px',
-                fontWeight: p === paso ? 'bold' : 'normal',
-                fontSize: 14
-              }}
-            >
-              Paso {p}
-            </div>
-          ))}
-        </div>
+        {[1, 2, 3, 4, 5].map(p => (
+          <div
+            key={p}
+            style={{
+              flex: 1,
+              textAlign: 'center',
+              padding: 10,
+              background: p === paso ? '#007bff' : '#ccc',
+              color: p === paso ? 'white' : 'black',
+              borderRadius: 5,
+              margin: '0 5px',
+              fontWeight: p === paso ? 'bold' : 'normal',
+              fontSize: 14
+            }}
+          >
+            Paso {p}
+          </div>
+        ))}
+      </div>
+
       <h2>Crear Factura Electrónica (SII Chile 2025)</h2>
       <p style={{ background: '#eef', padding: 10, borderRadius: 5 }}>{guiaPorPaso[paso]}</p>
 
       {paso === 1 && (
         <>
           <h3>Datos del Emisor</h3>
-          <input name="rut" placeholder="RUT Emisor" value={emisor.rut} onChange={e => handleChange(setEmisor, e)}   style={inputStyle} />
-          <input name="razonSocial" placeholder="Razón Social" value={emisor.razonSocial} onChange={e => handleChange(setEmisor, e)}   style={inputStyle} />
-          <input name="giro" placeholder="Giro" value={emisor.giro} onChange={e => handleChange(setEmisor, e)}   style={inputStyle} />
-          <input name="direccion" placeholder="Dirección" value={emisor.direccion} onChange={e => handleChange(setEmisor, e)}   style={inputStyle}/>
-          <select name="comuna" value={emisor.comuna} onChange={e => handleChange(setEmisor, e)}   style={inputStyle}>
+          <input name="rut" placeholder="RUT Emisor" value={emisor.rut} onChange={e => handleChange(setEmisor, e)} style={inputStyle} />
+          <input name="razonSocial" placeholder="Razón Social" value={emisor.razonSocial} onChange={e => handleChange(setEmisor, e)} style={inputStyle} />
+          <input name="giro" placeholder="Giro" value={emisor.giro} onChange={e => handleChange(setEmisor, e)} style={inputStyle} />
+          <input name="direccion" placeholder="Dirección" value={emisor.direccion} onChange={e => handleChange(setEmisor, e)} style={inputStyle} />
+          <select name="comuna" value={emisor.comuna} onChange={e => handleChange(setEmisor, e)} style={inputStyle}>
             <option value="">Seleccione comuna</option>
-            {comunas.map((c, i) => <option key={i} value={c}>{c}</option>)} 
+            {comunas.map((c, i) => <option key={i} value={c}>{c}</option>)}
           </select>
         </>
       )}
@@ -197,11 +212,11 @@ const FacturaInteractiva = () => {
       {paso === 2 && (
         <>
           <h3>Datos del Receptor</h3>
-          <input name="rut" placeholder="RUT Receptor" value={receptor.rut} onChange={e => handleChange(setReceptor, e)}   style={inputStyle}/>
-          <input name="razonSocial" placeholder="Razón Social" value={receptor.razonSocial} onChange={e => handleChange(setReceptor, e)}   style={inputStyle}/>
-          <input name="giro" placeholder="Giro" value={receptor.giro} onChange={e => handleChange(setReceptor, e)}   style={inputStyle}/>
-          <input name="direccion" placeholder="Dirección" value={receptor.direccion} onChange={e => handleChange(setReceptor, e)}   style={inputStyle}/>
-          <select name="comuna" value={receptor.comuna} onChange={e => handleChange(setReceptor, e)}   style={inputStyle}>
+          <input name="rut" placeholder="RUT Receptor" value={receptor.rut} onChange={e => handleChange(setReceptor, e)} style={inputStyle} />
+          <input name="razonSocial" placeholder="Razón Social" value={receptor.razonSocial} onChange={e => handleChange(setReceptor, e)} style={inputStyle} />
+          <input name="giro" placeholder="Giro" value={receptor.giro} onChange={e => handleChange(setReceptor, e)} style={inputStyle} />
+          <input name="direccion" placeholder="Dirección" value={receptor.direccion} onChange={e => handleChange(setReceptor, e)} style={inputStyle} />
+          <select name="comuna" value={receptor.comuna} onChange={e => handleChange(setReceptor, e)} style={inputStyle}>
             <option value="">Seleccione comuna</option>
             {comunas.map((c, i) => <option key={i} value={c}>{c}</option>)}
           </select>
@@ -209,74 +224,75 @@ const FacturaInteractiva = () => {
       )}
 
       {paso === 3 && (
-  <>
-    <h4>Moneda de la Factura</h4>
-        <select value={moneda} onChange={(e) => setMoneda(e.target.value)} style={inputStyle}>
-          <option value="CLP">CLP - Peso Chileno</option>
-          <option value="USD">USD - Dólar estadounidense</option>
-          <option value="EUR">EUR - Euro</option>
-          <option value="BRL">BRL - Real brasileño</option>
-          <option value="ARS">ARS - Peso argentino</option>
-          <option value="GBP">GBP - Libra esterlina</option>
-          <option value="JPY">JPY - Yen japonés</option>
-          <option value="CNY">CNY - Yuan chino</option>
-          <option value="CAD">CAD - Dólar canadiense</option>
-          <option value="AUD">AUD - Dólar australiano</option>
-          <option value="CHF">CHF - Franco suizo</option>
-          <option value="MXN">MXN - Peso mexicano</option>
-          <option value="KRW">KRW - Won surcoreano</option>
-          <option value="INR">INR - Rupia india</option>
-          <option value="PEN">PEN - Sol peruano</option>
-          <option value="UYU">UYU - Peso uruguayo</option>
-        </select>
+        <>
+          <h4>Moneda de la Factura</h4>
+          <select value={moneda} onChange={(e) => setMoneda(e.target.value)} style={inputStyle}>
+            <option value="CLP">CLP - Peso Chileno</option>
+            <option value="USD">USD - Dólar estadounidense</option>
+            <option value="EUR">EUR - Euro</option>
+            <option value="BRL">BRL - Real brasileño</option>
+            <option value="ARS">ARS - Peso argentino</option>
+            <option value="GBP">GBP - Libra esterlina</option>
+            <option value="JPY">JPY - Yen japonés</option>
+            <option value="CNY">CNY - Yuan chino</option>
+            <option value="CAD">CAD - Dólar canadiense</option>
+            <option value="AUD">AUD - Dólar australiano</option>
+            <option value="CHF">CHF - Franco suizo</option>
+            <option value="MXN">MXN - Peso mexicano</option>
+            <option value="KRW">KRW - Won surcoreano</option>
+            <option value="INR">INR - Rupia india</option>
+            <option value="PEN">PEN - Sol peruano</option>
+            <option value="UYU">UYU - Peso uruguayo</option>
+          </select>
 
-        <h3 style={{ marginTop: 20 }}>Detalle de Productos/Servicios</h3>
-        {items.map((item, idx) => (
-          <div key={idx} style={{ marginBottom: 10, border: '1px solid #ccc', padding: 10, borderRadius: 5 }}>
-            <input
-              placeholder="Descripción"
-              value={item.descripcion}
-              onChange={e => handleItemChange(idx, 'descripcion', e.target.value)}
-              style={inputStyle}
-            />
-            <input
-              type="number"
-              placeholder="Cantidad"
-              min={1}
-              value={item.cantidad}
-              onChange={e => handleItemChange(idx, 'cantidad', parseInt(e.target.value))}
-              style={inputStyle}
-            />
-            <input
-              type="text"
-              placeholder="Precio Unitario"
-              min={0}
-              value={item.precioUnitario}
-              onChange={e => handleItemChange(idx, 'precioUnitario', parseFloat(e.target.value))}
-              style={inputStyle}
-            />
-            <span style={{ marginLeft: 10 }}>
-              {formatoMoneda.format(item.cantidad * item.precioUnitario || 0)}
-            </span>
-            <button
-              type="button"
-              onClick={() => quitarItem(idx)}
-              style={{ marginLeft: 10, color: 'red' }}
-            >
-              Eliminar
-            </button>
-          </div>
-        ))}
-        <button type="button" onClick={agregarItem}>+ Agregar Ítem</button>
-      </>
-    )}
+          <h3 style={{ marginTop: 20 }}>Detalle de Productos/Servicios</h3>
+          {items.map((item, idx) => (
+            <div key={idx} style={{ marginBottom: 10, border: '1px solid #ccc', padding: 10, borderRadius: 5 }}>
+              <input
+                placeholder="Descripción"
+                value={item.descripcion}
+                onChange={e => handleItemChange(idx, 'descripcion', e.target.value)}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                placeholder="Cantidad"
+                min={1}
+                value={item.cantidad}
+                onChange={e => handleItemChange(idx, 'cantidad', parseInt(e.target.value))}
+                style={inputStyle}
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Precio Unitario"
+                min={0}
+                value={item.precioUnitario}
+                onChange={e => handleItemChange(idx, 'precioUnitario', parseFloat(e.target.value))}
+                style={inputStyle}
+              />
+              <span style={{ marginLeft: 10 }}>
+                {formatoMoneda.format(item.cantidad * item.precioUnitario || 0)}
+              </span>
+              <button
+                type="button"
+                onClick={() => quitarItem(idx)}
+                style={{ marginLeft: 10, color: 'red' }}
+              >
+                Eliminar
+              </button>
+            </div>
+          ))}
+          <button type="button" onClick={agregarItem}>+ Agregar Ítem</button>
+        </>
+      )}
 
       {paso === 4 && (
         <>
           <h3>Totales</h3>
-          <p>Neto: ${neto.toFixed(2)}</p>
-          <p>IVA (19%): ${iva.toFixed(2)}</p>
-          <p><strong>Total: ${total.toFixed(2)}</strong></p>
+          <p>Neto: {formatoMoneda.format(neto)}</p>
+          <p>IVA (19%): {formatoMoneda.format(iva)}</p>
+          <p><strong>Total: {formatoMoneda.format(total)}</strong></p>
         </>
       )}
 
@@ -291,18 +307,18 @@ const FacturaInteractiva = () => {
             color: '#000',
             position: 'relative'
           }}>
-          {/* Logo SII visible en la factura */}
-          <img
-            src="/sii.png"
-            alt="Logo SII"
-            style={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              width: 100,
-              opacity: 0.9
-            }}
-          />
+            {/* Logo SII visible en la factura */}
+            <img
+              src="/sii.png"
+              alt="Logo SII"
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                width: 100,
+                opacity: 0.9
+              }}
+            />
 
             <h2 style={{ textAlign: 'center' }}>Factura Electrónica</h2>
             <p style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '10px' }}>
@@ -327,7 +343,7 @@ const FacturaInteractiva = () => {
               </div>
             </div>
 
-             <h4>Detalle</h4>
+            <h4>Detalle</h4>
             <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20 }}>
               <thead>
                 <tr style={{ background: '#eee' }}>
@@ -357,7 +373,7 @@ const FacturaInteractiva = () => {
               <p><strong>Total a pagar:</strong> {formatoMoneda.format(total)}</p>
             </div>
 
-             {/* Pie legal */}
+            {/* Pie legal */}
             <footer style={{ marginTop: 20, fontSize: 12, color: '#555', borderTop: '1px solid #ccc', paddingTop: 10 }}>
               Documento emitido electrónicamente conforme a la normativa del Servicio de Impuestos Internos (SII).<br />
               Contacto emisor: contacto@empresa.cl
@@ -375,7 +391,9 @@ const FacturaInteractiva = () => {
 
           </div>
 
-          <button onClick={handleEnviar}>Enviar y Descargar PDF</button>
+          <button onClick={handleEnviar} style={{ marginTop: 20, padding: '10px 20px', fontSize: 16 }}>
+            Enviar y Descargar PDF
+          </button>
         </>
       )}
 
