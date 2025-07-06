@@ -1,6 +1,7 @@
 #models/resumen.py
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from extensions import db
 
 class Gasto(db.Model):
     id = db.Column(db.Integer, primary_key=True)

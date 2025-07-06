@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "html2pdf.js": "^0.10.3"
+  }
+}

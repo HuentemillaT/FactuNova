@@ -390,3 +390,14 @@ strong {
 }
 
 /*Fin css gastos*/
+/* */
+.document {
+  color-scheme: transparent;
+}
+
+.valida{
+  color-scheme: transparent;
+}
+.buttonV{
+  background-color: grey;
+}

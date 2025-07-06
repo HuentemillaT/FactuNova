@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Factura Electrónica</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      color: #000;
+      font-size: 14px;
+    }
+    .container {
+      border: 1px solid #ccc;
+      padding: 20px;
+      position: relative;
+    }
+    img.logo {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 100px;
+      opacity: 0.9;
+    }
+    h2 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    th {
+      background-color: #eee;
+    }
+    .totales {
+      text-align: right;
+      margin-top: 20px;
+    }
+    footer {
+      font-size: 12px;
+      color: #555;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+      margin-top: 20px;
+    }
+    .qr {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="file:///{{ factura.logo }}" alt="Logo SII" class="logo">
+    <h2>Factura Electrónica</h2>
+
+    <p><strong>Número de factura:</strong> {{ factura.numero_factura }}</p>
+    <p><strong>Fecha de emisión:</strong> {{ factura.fecha_emision }}</p>
+
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+      <div style="width: 48%;">
+        <h4>Emisor</h4>
+        <p><strong>Razón Social:</strong> {{ factura.emisor.razonSocial }}</p>
+        <p><strong>RUT:</strong> {{ factura.emisor.rut }}</p>
+        <p><strong>Giro:</strong> {{ factura.emisor.giro }}</p>
+        <p><strong>Dirección:</strong> {{ factura.emisor.direccion }}, {{ factura.emisor.comuna }}</p>
+      </div>
+      <div style="width: 48%;">
+        <h4>Receptor</h4>
+        <p><strong>Razón Social:</strong> {{ factura.receptor.razonSocial }}</p>
+        <p><strong>RUT:</strong> {{ factura.receptor.rut }}</p>
+        <p><strong>Giro:</strong> {{ factura.receptor.giro }}</p>
+        <p><strong>Dirección:</strong> {{ factura.receptor.direccion }}, {{ factura.receptor.comuna }}</p>
+      </div>
+    </div>
+
+    <h4>Detalle</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in factura.items %}
+        <tr>
+          <td>{{ item.descripcion }}</td>
+          <td style="text-align: center;">{{ item.cantidad }}</td>
+          <td style="text-align: right;">${{ '%.2f'|format(item.precioUnitario) }}</td>
+          <td style="text-align: right;">${{ '%.2f'|format(item.cantidad * item.precioUnitario) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="totales">
+      <p><strong>Neto:</strong> ${{ '%.2f'|format(factura.neto) }}</p>
+      <p><strong>IVA (19%):</strong> ${{ '%.2f'|format(factura.iva) }}</p>
+      <p><strong>Total a pagar:</strong> <strong>${{ '%.2f'|format(factura.total) }}</strong></p>
+    </div>
+
+    <footer>
+      Documento emitido electrónicamente conforme a la normativa del Servicio de Impuestos Internos (SII).<br>
+      Contacto emisor: contacto@empresa.cl
+    </footer>
+
+    <div class="qr">
+      <p><strong>Timbre electrónico:</strong> {{ factura.timbre }}</p>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ factura.timbre }}" alt="QR Timbre">
+    </div>
+  </div>
+</body>
+</html>
